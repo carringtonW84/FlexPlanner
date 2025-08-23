@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
-import { getMonthDays, isHoliday, getDayOfWeekName } from "./utils/utils.js";
+// src/App.jsx
+import { useState, useEffect } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { LoginPage } from "./pages/LoginPage";
 import { AppHeader } from "./components/layout/AppHeader.jsx";
 import { PlanningPage } from "./pages/PlanningPage.jsx";
 import { NavigationBar } from "./components/layout/NavigationBar.jsx";
@@ -7,40 +9,11 @@ import { WeeklySchedulePage } from "./pages/WeeklySchedulePage.jsx";
 import { VacationsPage } from "./pages/VacationsPage.jsx";
 import { AccountPage } from "./pages/AccountPage.jsx";
 import { PresencePage } from "./pages/PresencePage.jsx";
+import { Card } from "./components/common/Card.jsx";
 
-const App = () => {
+const AppContent = () => {
+  const { isAuthenticated, loading, user } = useAuth();
   const [activeNavItem, setActiveNavItem] = useState("planning");
-
-  // Planning state
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [userPlanning, setUserPlanning] = useState({});
-  const [weeklySchedule, setWeeklySchedule] = useState({
-    lundi: true,
-    mardi: true,
-    mercredi: false,
-    jeudi: true,
-    vendredi: false,
-  });
-
-  // Vacations state
-  const [vacations, setVacations] = useState([
-    {
-      id: 1,
-      startDate: "2025-03-15",
-      endDate: "2025-03-25",
-      type: "Congés payés",
-    },
-    {
-      id: 2,
-      startDate: "2025-07-10",
-      endDate: "2025-07-20",
-      type: "Congés été",
-    },
-  ]);
-
-  // Team members state
-  const [selectedTeam, setSelectedTeam] = useState("Équipe Développement");
 
   const navItems = [
     { id: "planning", label: "📅 Mon planning" },
@@ -50,70 +23,33 @@ const App = () => {
     { id: "account", label: "👤 Mon compte" },
   ];
 
-  const monthDays = useMemo(() => {
-    return getMonthDays(selectedYear, selectedMonth);
-  }, [selectedYear, selectedMonth]);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-xl font-semibold text-gray-700">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const getDayStatus = (date) => {
-    const key = date.toISOString().split("T")[0];
-    if (userPlanning[key]) return userPlanning[key];
-
-    const holiday = isHoliday(date);
-    if (holiday) return "holiday";
-
-    const dayOfWeek = date.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) return "weekend";
-
-    const dayName = getDayOfWeekName(dayOfWeek);
-    if (weeklySchedule[dayName] !== undefined) {
-      return weeklySchedule[dayName] ? "onsite" : "remote";
-    }
-
-    return "onsite";
-  };
-
-  const setDayStatus = (date, status) => {
-    const key = date.toISOString().split("T")[0];
-    setUserPlanning({
-      ...userPlanning,
-      [key]: status,
-    });
-  };
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   const renderContent = () => {
     switch (activeNavItem) {
       case "planning":
-        return (
-          <PlanningPage
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            monthDays={monthDays}
-            getDayStatus={getDayStatus}
-            setDayStatus={setDayStatus}
-          />
-        );
+        return <PlanningPage />;
       case "weekly":
-        return (
-          <WeeklySchedulePage
-            weeklySchedule={weeklySchedule}
-            setWeeklySchedule={setWeeklySchedule}
-          />
-        );
+        return <WeeklySchedulePage />;
       case "vacations":
-        return (
-          <VacationsPage vacations={vacations} setVacations={setVacations} />
-        );
+        return <VacationsPage />;
       case "account":
         return <AccountPage />;
       case "presence":
-        return (
-          <PresencePage
-            selectedTeam={selectedTeam}
-            setSelectedTeam={setSelectedTeam}
-          />
-        );
+        return <PresencePage />;
       default:
         return (
           <Card>
@@ -130,7 +66,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <AppHeader />
+      <AppHeader user={user} />
       <NavigationBar
         items={navItems}
         activeItem={activeNavItem}
@@ -152,6 +88,14 @@ const App = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

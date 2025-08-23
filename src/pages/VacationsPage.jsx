@@ -1,12 +1,19 @@
-import { useState } from "react";
+// src/pages/VacationsPage.jsx
+import { useState, useEffect } from "react";
+import { apiService } from "../services/apiService";
 import { useForm } from "../hooks/useForm";
 import { Card } from "../components/common/Card";
 import { Input } from "../components/common/Input";
 import { Select } from "../components/common/Select";
 import { Button } from "../components/common/Button";
-import { VACATION_TYPE_OPTIONS } from "../assets/constants/vacationTypeOptions";
 
-export const VacationsPage = ({ vacations, setVacations }) => {
+export const VacationsPage = () => {
+  const [vacations, setVacations] = useState([]);
+  const [vacationTypes, setVacationTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
   const {
     values: newVacation,
     handleChange: handleVacationChange,
@@ -14,20 +21,106 @@ export const VacationsPage = ({ vacations, setVacations }) => {
   } = useForm({
     startDate: "",
     endDate: "",
-    type: "Congés payés",
+    vacationTypeCode: "",
+    notes: "",
   });
 
-  const addVacation = () => {
-    if (newVacation.startDate && newVacation.endDate) {
-      setVacations([...vacations, { id: Date.now(), ...newVacation }]);
+  // Charger les données initiales
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [vacationsData, typesData] = await Promise.all([
+          apiService.getVacations(),
+          apiService.getVacationTypes(),
+        ]);
+
+        setVacations(vacationsData);
+        setVacationTypes(typesData);
+
+        // Sélectionner le premier type par défaut
+        if (typesData.length > 0) {
+          handleVacationChange("vacationTypeCode")(typesData[0].value);
+        }
+      } catch (err) {
+        setError("Erreur lors du chargement des données: " + err.message);
+        console.error("Erreur:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const addVacation = async () => {
+    if (
+      !newVacation.startDate ||
+      !newVacation.endDate ||
+      !newVacation.vacationTypeCode
+    ) {
+      alert("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const newVac = await apiService.createVacation({
+        vacationTypeCode: newVacation.vacationTypeCode,
+        startDate: newVacation.startDate,
+        endDate: newVacation.endDate,
+        notes: newVacation.notes,
+      });
+
+      setVacations([...vacations, newVac]);
       resetVacation();
+
+      // Remettre le premier type par défaut
+      if (vacationTypes.length > 0) {
+        handleVacationChange("vacationTypeCode")(vacationTypes[0].value);
+      }
+    } catch (err) {
+      setError("Erreur lors de la création des congés: " + err.message);
+      console.error("Erreur:", err);
+    } finally {
+      setSaving(false);
     }
   };
+
+  const deleteVacation = async (vacationId) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ces congés ?")) {
+      return;
+    }
+
+    try {
+      await apiService.deleteVacation(vacationId);
+      setVacations(vacations.filter((v) => v.id !== vacationId));
+    } catch (err) {
+      setError("Erreur lors de la suppression: " + err.message);
+      console.error("Erreur:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+        <p>Chargement des congés...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       <Card title="➕ Ajouter des congés">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Input
             label="📅 Date de début"
             type="date"
@@ -42,14 +135,20 @@ export const VacationsPage = ({ vacations, setVacations }) => {
           />
           <Select
             label="🏷️ Type de congé"
-            value={newVacation.type}
-            onChange={handleVacationChange("type")}
-            options={VACATION_TYPE_OPTIONS}
+            value={newVacation.vacationTypeCode}
+            onChange={handleVacationChange("vacationTypeCode")}
+            options={vacationTypes}
+          />
+          <Input
+            label="📝 Notes (optionnel)"
+            value={newVacation.notes}
+            onChange={handleVacationChange("notes")}
+            placeholder="Notes supplémentaires"
           />
         </div>
         <div className="text-center mt-6">
-          <Button onClick={addVacation} size="large">
-            ➕ Ajouter les congés
+          <Button onClick={addVacation} size="large" disabled={saving}>
+            {saving ? "🔄 Ajout..." : "➕ Ajouter les congés"}
           </Button>
         </div>
       </Card>
@@ -61,22 +160,42 @@ export const VacationsPage = ({ vacations, setVacations }) => {
               key={vacation.id}
               className="flex items-center justify-between p-6 border-2 border-yellow-200 rounded-2xl bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300"
             >
-              <div>
-                <div className="font-bold text-lg text-yellow-800">
+              <div className="flex-1">
+                <div className="font-bold text-lg text-yellow-800 mb-1">
                   {vacation.type}
                 </div>
-                <div className="text-yellow-600 font-medium">
+                <div className="text-yellow-600 font-medium mb-2">
                   📅 Du{" "}
-                  {new Date(vacation.startDate).toLocaleDateString("fr-FR")}
-                  au {new Date(vacation.endDate).toLocaleDateString("fr-FR")}
+                  {new Date(vacation.startDate).toLocaleDateString("fr-FR")} au{" "}
+                  {new Date(vacation.endDate).toLocaleDateString("fr-FR")}
                 </div>
+                <div className="flex items-center space-x-4 text-sm">
+                  <span
+                    className={`px-3 py-1 rounded-full font-semibold ${
+                      vacation.status === "approved"
+                        ? "bg-green-200 text-green-800"
+                        : vacation.status === "pending"
+                        ? "bg-orange-200 text-orange-800"
+                        : "bg-red-200 text-red-800"
+                    }`}
+                  >
+                    {vacation.status === "approved"
+                      ? "✅ Approuvé"
+                      : vacation.status === "pending"
+                      ? "⏳ En attente"
+                      : "❌ Refusé"}
+                  </span>
+                </div>
+                {vacation.notes && (
+                  <div className="text-sm text-yellow-700 mt-2 italic">
+                    📝 {vacation.notes}
+                  </div>
+                )}
               </div>
               <Button
                 variant="danger"
                 size="small"
-                onClick={() =>
-                  setVacations(vacations.filter((v) => v.id !== vacation.id))
-                }
+                onClick={() => deleteVacation(vacation.id)}
               >
                 🗑️ Supprimer
               </Button>
