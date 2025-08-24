@@ -10,9 +10,9 @@ export const TreeView = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={`mb-6 ${className}`}>
+    <div className={`mb-4 ${className}`}>
       {label && (
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
           {label}
         </label>
       )}
@@ -20,7 +20,7 @@ export const TreeView = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-3 text-left border-2 border-purple-200 rounded-xl shadow-sm bg-white focus:outline-none focus:ring-4 focus:ring-purple-500/25 focus:border-purple-500 hover:border-purple-300 transition-all duration-300"
+          className="w-full px-4 py-3 text-left border-2 border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-4 focus:ring-red-500/25 focus:border-red-700 hover:border-red-400 transition-all duration-300"
         >
           {value || "Sélectionner..."}
           <span
@@ -32,7 +32,7 @@ export const TreeView = ({
           </span>
         </button>
         {isOpen && (
-          <div className="absolute z-20 w-full mt-2 bg-white border-2 border-purple-200 rounded-xl shadow-xl overflow-hidden">
+          <div className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl overflow-hidden">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -41,7 +41,7 @@ export const TreeView = ({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className="block w-full px-4 py-3 text-left hover:bg-purple-50 transition-colors duration-200"
+                className="block w-full px-4 py-3 text-left hover:bg-red-50 transition-colors duration-200"
               >
                 {option.label}
               </button>

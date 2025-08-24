@@ -1,49 +1,41 @@
-// src/components/layout/AppHeader.jsx
-import React from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import React, { useState, useMemo } from "react";
 
 export const AppHeader = () => {
-  const { user } = useAuth();
-
   return (
-    <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white shadow-2xl">
-      <div className="container mx-auto px-6 py-6">
+    <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-800 text-white shadow-lg relative">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-1/4 w-32 h-32 bg-white rounded-full transform -translate-y-16 rotate-12"></div>
+        <div className="absolute bottom-0 right-1/4 w-24 h-24 bg-white rounded-full transform translate-y-12 -rotate-12"></div>
+      </div>
+      <div className="container mx-auto px-6 py-5 relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-              <span className="text-2xl font-bold">📅</span>
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+              <svg
+                className="w-6 h-6 text-red-800"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
-                WorkFlow Manager
-              </h1>
-              <p className="text-purple-100 text-sm font-medium">
-                Gérez votre planning et votre équipe en toute simplicité
+              <h1 className="text-2xl font-bold">DCL || Flex Planner</h1>
+              <p className="text-red-100 text-sm font-medium">
+                Gérez le planning de votre équipe en toute simplicité
               </p>
             </div>
           </div>
-
-          {user && (
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="font-semibold text-lg">
-                  👋 {user.firstName} {user.lastName}
-                </div>
-                <div className="text-purple-100 text-sm">
-                  {user.team ? `📋 ${user.team.name}` : "👤 Aucune équipe"}
-                </div>
-                <div className="text-purple-200 text-xs">
-                  ⚡ Vélocité: {user.velocity} pts
-                </div>
-              </div>
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <span className="text-xl">
-                  {user.firstName.charAt(0)}
-                  {user.lastName.charAt(0)}
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="bg-white text-red-800 rounded-lg px-4 py-2 shadow-md">
+            <div className="text-sm font-bold">Jérémy Courbet</div>
+            <div className="text-xs">Équipe Développement</div>
+          </div>
         </div>
       </div>
     </div>

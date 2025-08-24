@@ -79,10 +79,10 @@ const AppContent = () => {
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-3 mb-3">
             <span className="text-2xl">📅</span>
-            <span className="font-bold text-lg">WorkFlow Manager</span>
+            <span className="font-bold text-lg">Flex Planner</span>
           </div>
           <p className="text-gray-300">
-            &copy; 2025 WorkFlow Manager. Gérez votre planning en toute
+            &copy; 2025 - Flex Planner. Gérez votre planning en toute
             simplicité.
           </p>
         </div>

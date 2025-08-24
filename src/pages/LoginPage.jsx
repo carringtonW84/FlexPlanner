@@ -36,7 +36,7 @@ export const LoginPage = () => {
             <span className="text-3xl">📅</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            WorkFlow Manager
+            DCL || Flex Planner
           </h1>
           <p className="text-gray-600">Connectez-vous à votre compte</p>
         </div>
