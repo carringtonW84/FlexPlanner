@@ -1,6 +1,6 @@
 // src/services/apiService.js
-//const API_BASE_URL = "https://localhost:7120/api";
-const API_BASE_URL = "http://localhost/FlexPlanner.Api/api";
+const API_BASE_URL = "http://localhost:5161/api";
+//const API_BASE_URL = "http://localhost/FlexPlanner.Api/api";
 
 class ApiService {
   constructor() {
