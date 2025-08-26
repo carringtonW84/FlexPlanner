@@ -158,36 +158,19 @@ export const VacationsPage = () => {
           {vacations.map((vacation) => (
             <div
               key={vacation.id}
-              className="flex items-center justify-between p-6 border-2 border-yellow-200 rounded-2xl bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300"
+              className="flex items-center justify-between p-6 border-2 border-green-200 rounded-2xl bg-green-50 hover:bg-green-100 transition-colors duration-300"
             >
               <div className="flex-1">
-                <div className="font-bold text-lg text-yellow-800 mb-1">
+                <div className="font-bold text-lg text-green-800 mb-1">
                   {vacation.type}
                 </div>
-                <div className="text-yellow-600 font-medium mb-2">
+                <div className="text-green-600 font-medium mb-2">
                   📅 Du{" "}
                   {new Date(vacation.startDate).toLocaleDateString("fr-FR")} au{" "}
                   {new Date(vacation.endDate).toLocaleDateString("fr-FR")}
                 </div>
-                <div className="flex items-center space-x-4 text-sm">
-                  <span
-                    className={`px-3 py-1 rounded-full font-semibold ${
-                      vacation.status === "approved"
-                        ? "bg-green-200 text-green-800"
-                        : vacation.status === "pending"
-                        ? "bg-orange-200 text-orange-800"
-                        : "bg-red-200 text-red-800"
-                    }`}
-                  >
-                    {vacation.status === "approved"
-                      ? "✅ Approuvé"
-                      : vacation.status === "pending"
-                      ? "⏳ En attente"
-                      : "❌ Refusé"}
-                  </span>
-                </div>
                 {vacation.notes && (
-                  <div className="text-sm text-yellow-700 mt-2 italic">
+                  <div className="text-sm text-green-700 mt-2 italic">
                     📝 {vacation.notes}
                   </div>
                 )}

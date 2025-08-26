@@ -113,11 +113,7 @@ CREATE TABLE flexplanner.user_vacations (
     vacation_type_id UUID NOT NULL REFERENCES flexplanner.vacation_types(id),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected
     notes TEXT,
-    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    approved_at TIMESTAMP,
-    approved_by UUID REFERENCES flexplanner.users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CHECK (end_date >= start_date)
@@ -230,10 +226,10 @@ INSERT INTO flexplanner.user_weekly_schedules (user_id, week_day_id, is_onsite) 
 ((SELECT id FROM flexplanner.users WHERE email = 'alice.martin@exemple.com'), 5, FALSE); -- Vendredi - télétravail
 
 -- Congés d'exemple
-INSERT INTO flexplanner.user_vacations (user_id, vacation_type_id, start_date, end_date, status) VALUES 
+INSERT INTO flexplanner.user_vacations (user_id, vacation_type_id, start_date, end_date) VALUES 
 ((SELECT id FROM flexplanner.users WHERE email = 'alice.martin@exemple.com'), 
  (SELECT id FROM flexplanner.vacation_types WHERE code = 'PAID_LEAVE'), 
- '2025-03-15', '2025-03-25', 'approved'),
+ '2025-03-15', '2025-03-25'),
 ((SELECT id FROM flexplanner.users WHERE email = 'alice.martin@exemple.com'), 
  (SELECT id FROM flexplanner.vacation_types WHERE code = 'PAID_LEAVE'), 
  '2025-07-10', '2025-07-20', 'pending');
@@ -261,22 +257,24 @@ LEFT JOIN flexplanner.user_planning up ON u.id = up.user_id
 LEFT JOIN flexplanner.presence_statuses ps ON up.status_id = ps.id;
 
 -- Vue pour les congés actifs
-CREATE VIEW flexplanner.v_active_vacations AS
-SELECT 
-    uv.id,
+CREATE OR REPLACE VIEW flexplanner.v_active_vacations
+ AS
+ SELECT uv.id,
     u.email,
     u.first_name,
     u.last_name,
-    vt.name as vacation_type,
+    vt.name AS vacation_type,
     vt.emoji,
     uv.start_date,
     uv.end_date,
-    uv.status,
     uv.notes
-FROM flexplanner.user_vacations uv
-JOIN flexplanner.users u ON uv.user_id = u.id
-JOIN flexplanner.vacation_types vt ON uv.vacation_type_id = vt.id
-WHERE uv.end_date >= CURRENT_DATE;
+   FROM flexplanner.user_vacations uv
+     JOIN flexplanner.users u ON uv.user_id = u.id
+     JOIN flexplanner.vacation_types vt ON uv.vacation_type_id = vt.id
+  WHERE uv.end_date >= CURRENT_DATE;
+
+ALTER TABLE flexplanner.v_active_vacations
+    OWNER TO postgres;
 
 -- ================================================
 -- FONCTIONS UTILES
@@ -285,6 +283,7 @@ WHERE uv.end_date >= CURRENT_DATE;
 -- Fonction pour obtenir le statut d'un jour pour un utilisateur
 CREATE OR REPLACE FUNCTION flexplanner.get_user_day_status(p_user_id UUID, p_date DATE)
 RETURNS TABLE(status_code VARCHAR, status_name VARCHAR, status_emoji VARCHAR, status_color VARCHAR) AS $$
+
 BEGIN
     -- Vérifier d'abord s'il y a une planification spécifique
     RETURN QUERY
@@ -300,7 +299,6 @@ BEGIN
         FROM flexplanner.user_vacations uv
         WHERE uv.user_id = p_user_id 
         AND p_date BETWEEN uv.start_date AND uv.end_date
-        AND uv.status = 'approved'
         LIMIT 1;
     END IF;
     
