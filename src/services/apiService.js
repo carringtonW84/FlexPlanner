@@ -136,6 +136,10 @@ class ApiService {
     return await this.request("/configuration/teams");
   }
 
+  async getTeamsWithCheckboxes() {
+  return await this.request("/configuration/teams/checkboxes");
+}
+
   async getVacationTypes() {
     return await this.request("/configuration/vacation-types");
   }

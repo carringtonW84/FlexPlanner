@@ -6,11 +6,11 @@ import { useForm } from "../hooks/useForm";
 import { Card } from "../components/common/Card";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
-import { Select } from "../components/common/Select";
+import { DualListSelector } from "../components/common/DualListSelector";
 
 export const AccountPage = () => {
   const { user, updateUser } = useAuth();
-  const [teams, setTeams] = useState([]);
+  const [allTeams, setAllTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -23,23 +23,30 @@ export const AccountPage = () => {
   } = useForm({
     email: "",
     password: "",
-    teamId: "",
     velocity: 0,
+    selectedTeams: [], // Liste des équipes sélectionnées
   });
 
   // Charger les données initiales
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Récupérer toutes les équipes disponibles
         const teamsData = await apiService.getTeams();
-        setTeams([{ value: "", label: "Aucune équipe" }, ...teamsData]);
+        setAllTeams(teamsData);
 
         if (user) {
+          // Récupérer les équipes actuelles de l'utilisateur
+          const userTeams = user.teams || [];
+          
           setValues({
             email: user.email,
             password: "",
-            teamId: user.team?.id || "",
             velocity: user.velocity,
+            selectedTeams: userTeams.map(team => ({
+              value: team.id,
+              label: team.name
+            }))
           });
         }
       } catch (err) {
@@ -55,6 +62,11 @@ export const AccountPage = () => {
     }
   }, [user, setValues]);
 
+  // Gérer les changements de sélection d'équipes
+  const handleTeamsChange = (selectedTeams) => {
+    handleAccountChange("selectedTeams")(selectedTeams);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError("");
@@ -67,27 +79,25 @@ export const AccountPage = () => {
         updateData.password = userAccount.password;
       }
 
-      if (userAccount.teamId !== (user.team?.id || "")) {
-        updateData.teamId = userAccount.teamId || null;
+      // Convertir les équipes sélectionnées en IDs
+      if (userAccount.selectedTeams) {
+        updateData.teamIds = userAccount.selectedTeams.map(team => team.value);
+      } else {
+        updateData.teamIds = [];
       }
 
       if (userAccount.velocity !== user.velocity) {
         updateData.velocity = parseInt(userAccount.velocity);
       }
 
-      if (Object.keys(updateData).length > 0) {
-        await updateUser(updateData);
-        setSuccess("✅ Compte mis à jour avec succès !");
+      await updateUser(updateData);
+      setSuccess("✅ Compte mis à jour avec succès !");
 
-        // Réinitialiser le mot de passe
-        handleAccountChange("password")({ target: { value: "" } });
+      // Réinitialiser le mot de passe
+      handleAccountChange("password")({ target: { value: "" } });
 
-        // Faire disparaître le message après 3 secondes
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setSuccess("Aucune modification à sauvegarder");
-        setTimeout(() => setSuccess(""), 3000);
-      }
+      // Faire disparaître le message après 3 secondes
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError("Erreur lors de la sauvegarde: " + err.message);
       console.error("Erreur:", err);
@@ -97,13 +107,18 @@ export const AccountPage = () => {
   };
 
   const handleCancel = () => {
-    if (confirm("Êtes-vous sûr de vouloir annuler les modifications ?")) {
-      // Réinitialiser les valeurs avec les données utilisateur actuelles
+    if (window.confirm("Êtes-vous sûr de vouloir annuler les modifications ?")) {
+      // Recharger les données depuis l'utilisateur actuel
+      const userTeams = user.teams || [];
+      
       setValues({
         email: user.email,
         password: "",
-        teamId: user.team?.id || "",
         velocity: user.velocity,
+        selectedTeams: userTeams.map(team => ({
+          value: team.id,
+          label: team.name
+        }))
       });
       setError("");
       setSuccess("");
@@ -135,32 +150,44 @@ export const AccountPage = () => {
         </div>
       )}
 
-      <div className="max-w-md mx-auto space-y-6">
-        <Input label="📧 E-mail" value={userAccount.email} readOnly={true} />
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Input label="📧 E-mail" value={userAccount.email} readOnly={true} />
 
-        <Input
-          label="🔒 Nouveau mot de passe"
-          type="password"
-          value={userAccount.password}
-          onChange={handleAccountChange("password")}
-          placeholder="Laissez vide pour ne pas changer"
-        />
+          <Input
+            label="🔒 Nouveau mot de passe"
+            type="password"
+            value={userAccount.password}
+            onChange={handleAccountChange("password")}
+            placeholder="Laissez vide pour ne pas changer"
+          />
+        </div>
 
-        <Select
-          label="👥 Équipe"
-          value={userAccount.teamId}
-          onChange={handleAccountChange("teamId")}
-          options={teams}
-        />
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            👥 Gestion des équipes
+          </label>
+          <DualListSelector
+            availableItems={allTeams}
+            selectedItems={userAccount.selectedTeams}
+            onChange={handleTeamsChange}
+            availableTitle="Équipes disponibles"
+            selectedTitle="Mes équipes"
+            height="250px"
+            disabled={saving}
+          />
+        </div>
 
-        <Input
-          label="⚡ Vélocité (points/sprint)"
-          type="number"
-          value={userAccount.velocity}
-          onChange={handleAccountChange("velocity")}
-          placeholder="Points par sprint"
-          min="0"
-        />
+        <div className="max-w-md">
+          <Input
+            label="⚡ Vélocité (points/sprint)"
+            type="number"
+            value={userAccount.velocity}
+            onChange={handleAccountChange("velocity")}
+            placeholder="Points par sprint"
+            min="0"
+          />
+        </div>
 
         <div className="flex space-x-4 justify-center mt-8">
           <Button onClick={handleSave} size="large" disabled={saving}>
