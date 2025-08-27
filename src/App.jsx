@@ -10,6 +10,7 @@ import { VacationsPage } from "./pages/VacationsPage.jsx";
 import { AccountPage } from "./pages/AccountPage.jsx";
 import { PresencePage } from "./pages/PresencePage.jsx";
 import { Card } from "./components/common/Card.jsx";
+import { TeamReportsPage } from "./pages/TeamsReportPage.jsx";
 
 const AppContent = () => {
   const { isAuthenticated, loading, user, logout } = useAuth();
@@ -21,7 +22,7 @@ const AppContent = () => {
     { id: "weekly", label: "⏰ Ma semaine-type" },
     { id: "vacations", label: "🏖️ Mes congés" },
     { id: "presence", label: "👥 Qui est là ?" },
-    // { id: "account", label: "👤 Mon compte" }, // ← Supprimé
+    { id: "reports", label: "📊 Rapports équipe" },
   ];
 
   // Fonction pour gérer le clic sur "Mon Compte" depuis l'en-tête
@@ -45,30 +46,32 @@ const AppContent = () => {
   }
 
   const renderContent = () => {
-    switch (activeNavItem) {
-      case "planning":
-        return <PlanningPage />;
-      case "weekly":
-        return <WeeklySchedulePage />;
-      case "vacations":
-        return <VacationsPage />;
-      case "account":
-        return <AccountPage />;
-      case "presence":
-        return <PresencePage />;
-      default:
-        return (
-          <Card>
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">❓</div>
-              <h2 className="text-2xl font-bold text-gray-600">
-                Page non trouvée
-              </h2>
-            </div>
-          </Card>
-        );
-    }
-  };
+  switch (activeNavItem) {
+    case "planning":
+      return <PlanningPage />;
+    case "weekly":
+      return <WeeklySchedulePage />;
+    case "vacations":
+      return <VacationsPage />;
+    case "account":
+      return <AccountPage />;
+    case "presence":
+      return <PresencePage />;
+    case "reports":
+      return <TeamReportsPage />; 
+    default:
+      return (
+        <Card>
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">❓</div>
+            <h2 className="text-2xl font-bold text-gray-600">
+              Page non trouvée
+            </h2>
+          </div>
+        </Card>
+      );
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">

@@ -151,6 +151,70 @@ class ApiService {
   async getYears() {
     return await this.request("/configuration/years");
   }
+
+  // Team Reports methods
+async getTeamPlanningReport(teamId, startDate, endDate) {
+  const params = new URLSearchParams({
+    startDate: startDate,
+    endDate: endDate
+  });
+  
+  return await this.request(`/teamReports/${teamId}/planning?${params}`);
+}
+
+async exportTeamPlanningToExcel(teamId, startDate, endDate) {
+  const params = new URLSearchParams({
+    startDate: startDate,
+    endDate: endDate
+  });
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/teamReports/${teamId}/planning/export?${params}`, {
+      method: 'GET',
+      headers: {
+        ...(this.token && { Authorization: `Bearer ${this.token}` })
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    // Créer un blob avec les données Excel
+    const blob = await response.blob();
+    
+    // Extraire le nom du fichier depuis les headers
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = 'planning_export.xlsx';
+    
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    // Créer un lien de téléchargement
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    
+    // Déclencher le téléchargement
+    document.body.appendChild(link);
+    link.click();
+    
+    // Nettoyer
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    return { success: true, filename };
+  } catch (error) {
+    console.error('Erreur lors de l\'export Excel:', error);
+    throw error;
+  }
+}
+
 }
 
 export const apiService = new ApiService();
