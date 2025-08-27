@@ -12,16 +12,22 @@ import { PresencePage } from "./pages/PresencePage.jsx";
 import { Card } from "./components/common/Card.jsx";
 
 const AppContent = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
   const [activeNavItem, setActiveNavItem] = useState("planning");
 
+  // Suppression de l'élément "Mon compte" du menu de navigation
   const navItems = [
     { id: "planning", label: "📅 Mon planning" },
     { id: "weekly", label: "⏰ Ma semaine-type" },
     { id: "vacations", label: "🏖️ Mes congés" },
     { id: "presence", label: "👥 Qui est là ?" },
-    { id: "account", label: "👤 Mon compte" },
+    // { id: "account", label: "👤 Mon compte" }, // ← Supprimé
   ];
+
+  // Fonction pour gérer le clic sur "Mon Compte" depuis l'en-tête
+  const handleAccountClick = () => {
+    setActiveNavItem("account");
+  };
 
   if (loading) {
     return (
@@ -66,7 +72,11 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <AppHeader user={user} />
+      <AppHeader 
+        user={user} 
+        onAccountClick={handleAccountClick}
+        onLogout={logout}
+      />
       <NavigationBar
         items={navItems}
         activeItem={activeNavItem}

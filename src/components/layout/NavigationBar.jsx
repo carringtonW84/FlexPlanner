@@ -1,11 +1,20 @@
 import React, { useState, useMemo } from "react";
 
 export const NavigationBar = ({ items, activeItem, onItemClick }) => {
+  // Filtrer les items pour exclure "Mon Compte" ou tout item avec un id spécifique
+  const filteredItems = useMemo(() => {
+    return items.filter(item => 
+      item.id !== 'account' && 
+      item.id !== 'mon-compte' && 
+      !item.label.toLowerCase().includes('compte')
+    );
+  }, [items]);
+
   return (
     <nav className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 shadow-sm">
       <div className="container mx-auto px-6">
         <ul className="flex space-x-2 overflow-x-auto py-3">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <li key={item.id} className="whitespace-nowrap">
               <button
                 onClick={() => onItemClick(item.id)}

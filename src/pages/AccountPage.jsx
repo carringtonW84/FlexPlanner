@@ -9,7 +9,7 @@ import { Button } from "../components/common/Button";
 import { Select } from "../components/common/Select";
 
 export const AccountPage = () => {
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser } = useAuth();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -96,9 +96,17 @@ export const AccountPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    if (confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
-      logout();
+  const handleCancel = () => {
+    if (confirm("Êtes-vous sûr de vouloir annuler les modifications ?")) {
+      // Réinitialiser les valeurs avec les données utilisateur actuelles
+      setValues({
+        email: user.email,
+        password: "",
+        teamId: user.team?.id || "",
+        velocity: user.velocity,
+      });
+      setError("");
+      setSuccess("");
     }
   };
 
@@ -106,7 +114,7 @@ export const AccountPage = () => {
     return (
       <Card title="⚙️ Informations du compte">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p>Chargement des informations...</p>
         </div>
       </Card>
@@ -159,16 +167,8 @@ export const AccountPage = () => {
             {saving ? "🔄 Sauvegarde..." : "💾 Sauvegarder"}
           </Button>
 
-          <Button
-            variant="outline"
-            size="large"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="outline" size="large" onClick={handleCancel}>
             ❌ Annuler
-          </Button>
-
-          <Button variant="danger" size="large" onClick={handleLogout}>
-            🚪 Déconnexion
           </Button>
         </div>
       </div>
