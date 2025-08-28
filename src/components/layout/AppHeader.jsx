@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
 export const AppHeader = ({ user, onAccountClick, onLogout }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -14,6 +14,12 @@ export const AppHeader = ({ user, onAccountClick, onLogout }) => {
       onLogout();
     }
   };
+
+  // Gestion des cas où user n'est pas encore défini
+  // Adaptation à la vraie structure de vos données API
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "Utilisateur";
+  const displayTeam = user?.team?.name || "Aucune équipe";
+  const displayEmail = user?.email || "";
 
   return (
     <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-800 text-white shadow-lg relative">
@@ -54,8 +60,8 @@ export const AppHeader = ({ user, onAccountClick, onLogout }) => {
               className="bg-white text-red-800 rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-white/30 flex items-center space-x-2"
             >
               <div>
-                <div className="text-sm font-bold">{user?.name || "undefined"}</div>
-                <div className="text-xs">{user?.team?.name || "undefined"}</div>
+                <div className="text-sm font-bold">{displayName}</div>
+                <div className="text-xs">{displayTeam}</div>
               </div>
               <svg 
                 className={`w-4 h-4 transform transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`}
@@ -80,10 +86,13 @@ export const AppHeader = ({ user, onAccountClick, onLogout }) => {
                 {/* Menu */}
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
                   <div className="py-2">
-                    {/*<div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900">{user?.name || "Jérémy Courbet"}</p>
-                      <p className="text-xs text-gray-600">{user?.email || "jeremy.courbet@example.com"}</p>
-                    </div>*/}
+                    {/* Informations utilisateur dans le menu */}
+                    {displayEmail && (
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{displayName}</p>
+                        <p className="text-xs text-gray-600">{displayEmail}</p>
+                      </div>
+                    )}
                     
                     <button
                       onClick={handleAccountClick}
