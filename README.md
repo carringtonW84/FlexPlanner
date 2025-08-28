@@ -1,4 +1,4 @@
-# 📅 DCL || Flex Planner
+# 📅 Flex Planner
 
 Une application web moderne pour gérer le planning flexible d'équipe, développée en React avec Vite et Tailwind CSS.
 
