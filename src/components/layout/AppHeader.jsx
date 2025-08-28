@@ -54,8 +54,8 @@ export const AppHeader = ({ user, onAccountClick, onLogout }) => {
               className="bg-white text-red-800 rounded-lg px-4 py-2 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-white/30 flex items-center space-x-2"
             >
               <div>
-                <div className="text-sm font-bold">{user?.name || "Jérémy Courbet"}</div>
-                <div className="text-xs">{user?.team?.name || "Équipe Développement"}</div>
+                <div className="text-sm font-bold">{user?.name || "undefined"}</div>
+                <div className="text-xs">{user?.team?.name || "undefined"}</div>
               </div>
               <svg 
                 className={`w-4 h-4 transform transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''}`}
