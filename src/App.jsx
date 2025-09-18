@@ -11,6 +11,7 @@ import { AccountPage } from "./pages/AccountPage.jsx";
 import { PresencePage } from "./pages/PresencePage.jsx";
 import { Card } from "./components/common/Card.jsx";
 import { TeamReportsPage } from "./pages/TeamsReportPage.jsx";
+import { OnCallSchedulePage } from "./pages/OnCallSchedulePage.jsx";
 
 const AppContent = () => {
   const { isAuthenticated, loading, user, logout } = useAuth();
@@ -22,6 +23,7 @@ const AppContent = () => {
     { id: "weekly", label: "⏰ Ma semaine-type" },
     { id: "vacations", label: "🏖️ Mes congés" },
     { id: "presence", label: "👥 Qui est là ?" },
+    { id: "oncall", label: "🚨 Astreintes" },
     { id: "reports", label: "📊 Rapports équipe" },
   ];
 
@@ -57,6 +59,8 @@ const AppContent = () => {
       return <AccountPage />;
     case "presence":
       return <PresencePage />;
+    case "oncall":
+      return <OnCallSchedulePage />;
     case "reports":
       return <TeamReportsPage />; 
     default:
